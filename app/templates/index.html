@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<canvas id  ="canvas" 
+    width   ="600"
+    height  ="600"
+    style   ="background-color: lightgray;"
+    oncontextmenu="return false;">
+</canvas>
+
+<script>
+    canvas=document.getElementById('canvas');
+    var xhttp =  new XMLHttpRequest();
+    
+    xhttp.onreadystatechange = function(){
+        if (this.readyState == 4 && this.status == 200) {
+            points = xhttp.responseText.match(/[\d.]+,[\d.]+/g)
+            points.forEach( function(p) {
+                coords = p.split(",");
+                drawCoordinates(coords[0], coords[1]);
+            });
+        }
+    };
+
+    function drawCoordinates(x,y){
+        var pointsize = 3;
+        var ctx = canvas.getContext("2d");
+        ctx.fillRect(x,y,1,1);
+        
+    }
+    
+    function requestPoints(p) {
+        var obj = { n: 200,
+                    center: p,
+                    stdev: 20};             
+        xhttp.open("POST", "/points", true);
+        xhttp.setRequestHeader("Content-type", "application/json");
+        xhttp.send(JSON.stringify(obj));
+    }
+        
+    function mouseClickHandler(e, button_id) {
+        var rect = canvas.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+        
+        canvas.getContext("2d").fillStyle = e.button == 0 ? "#ff0000" : "#0000ff"; 
+        var points = requestPoints([x,y])
+    }
+    canvas.addEventListener("mousedown", function(e){ mouseClickHandler(e) });
+
+</script>
+{% endblock %}
